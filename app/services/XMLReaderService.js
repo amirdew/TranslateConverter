@@ -57,6 +57,7 @@ module.exports = {
 
         var parsedFiles = [];
         var error = false;
+        var noneStringFile = 0;
 
         xmlFileNames.forEach(function (fileName) {
 
@@ -97,9 +98,12 @@ module.exports = {
                             callback('Error on parsing file: ' + path + ' ' + e, null);
                         }
                     }
+                    else{
+                        noneStringFile++
+                    }
                 }
 
-                if (parsedFiles.length === xmlFileNames.length && !error)
+                if (parsedFiles.length === (xmlFileNames.length - noneStringFile) && !error)
                     callback(null, parsedFiles);
             });
         });
