@@ -28,7 +28,7 @@ module.exports = {
                             //change formatted strings
                             var index = 0;
                             value = value.replace(/%(?:\d+\$)?[+-]?(?:[ 0]|'.{1})?-?\d*(?:\.\d+)?[bcdeEufFgGosxX]/g, function () {
-                                return '{' + (index++) +'}';
+                                return '{' + (index++) + '}';
                             });
                             //////
 
@@ -81,24 +81,49 @@ module.exports = {
                         error = true;
                         callback('Error on parsing file: ' + path, null);
                     }
-                    else if(json.resources.string){
+                    else if (json.resources.string || json.resources.plurals) {
+
+
                         try {
                             var fileData = {};
-                            json.resources.string.forEach(function (stringData) {
-                                if (stringData.name && stringData.$t)
-                                    fileData[stringData.name] = stringData.$t
-                            });
+
+                            if(json.resources.string) {
+                                if (!Array.isArray(json.resources.string))
+                                    json.resources.string = [json.resources.string];
+                                json.resources.string.forEach(function (stringData) {
+                                    if (stringData.name && stringData.$t)
+                                        fileData[stringData.name] = stringData.$t
+                                });
+                            }
+
+                            if(json.resources.plurals){
+                                if (!Array.isArray(json.resources.plurals))
+                                    json.resources.plurals = [json.resources.plurals];
+                                json.resources.plurals.forEach(function (pluralData) {
+
+                                    if (!Array.isArray(pluralData.item))
+                                        pluralData.item = [pluralData.item];
+
+                                    pluralData.item.forEach(function (pluralItem) {
+                                        fileData[pluralData.name + "_" + pluralItem.quantity] = pluralItem.$t;
+                                    });
+
+                                });
+                            }
+
+
                             parsedFiles.push({
                                 name: fileName,
                                 data: fileData
                             })
+
                         }
                         catch (e) {
                             error = true;
                             callback('Error on parsing file: ' + path + ' ' + e, null);
                         }
                     }
-                    else{
+                    else {
                         noneStringFile++
                     }
                 }
